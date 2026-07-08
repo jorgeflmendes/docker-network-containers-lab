@@ -1,13 +1,13 @@
 # Docker Network Containers Lab
 
-A reproducible network-containers lab for Linux namespaces, IPIP tunnels, Docker macvlan/VLANs, multicast VXLAN, and Docker Swarm overlay networking.
+> A reproducible network-containers lab for Linux namespaces, IPIP tunnels, Docker macvlan/VLANs, multicast VXLAN, and Docker Swarm overlay networking.
 
 [![CI](https://img.shields.io/badge/CI-publication%20checks-lightgrey)](.github/workflows/ci.yml)
 [![GNS3](https://img.shields.io/badge/GNS3-lab-orange)](https://www.gns3.com/)
 [![Academic](https://img.shields.io/badge/Academic-SAAR%202025%2F2026-blue)](#academic-context)
 
-[!WARNING]
-This repository documents controlled academic network-security lab work. Run the commands and scenarios only in isolated environments where you have authorization. Licensed appliance images, course handouts, raw packet captures, and local lab state are intentionally excluded.
+> [!WARNING]
+> This repository documents controlled academic network-security lab work. Run the commands and scenarios only in isolated environments where you have authorization. Licensed appliance images, course handouts, raw packet captures, and local lab state are intentionally excluded.
 
 ## Overview
 
