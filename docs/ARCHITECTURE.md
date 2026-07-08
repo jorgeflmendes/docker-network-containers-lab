@@ -20,4 +20,4 @@ The repository keeps report source and selected reviewed evidence. It deliberate
 
 ## Reproduction Assumptions
 
-The lab was executed in GNS3 using Cisco/GNS3 appliances and Linux containers. Re-running the full topology requires local access to those appliances and the original lab guide. The portable CI only validates repository hygiene.
+The lab was executed in GNS3 using Cisco/GNS3 appliances and Linux containers. Re-running the full topology requires local access to those appliances and the original lab guide.
