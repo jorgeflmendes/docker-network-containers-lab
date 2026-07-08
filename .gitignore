@@ -1,0 +1,52 @@
+# OS/editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.tmp
+*.bak
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# LaTeX generated files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Raw captures and large lab artefacts
+*.pcap
+*.pcapng
+*.har
+*.gns3project
+*.qcow2
+*.vmdk
+*.bin
+*.image
+*.zip
+*.7z
+*.rar
+
+# Local lab state and secrets
+.env
+.env.*
+!.env.example
+*project_id*.txt
+gns3_project_id.txt
+*.key
+*.pem

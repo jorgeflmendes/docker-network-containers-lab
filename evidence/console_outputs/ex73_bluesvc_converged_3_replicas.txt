@@ -1,0 +1,31 @@
+===== ub1 remove local bluesvc containers =====
+docker rm -f $(docker ps -aq --filter name=bluesvc) 2>/dev/null || true
+docker ps --filter name=bluesvc --format "table {{.Names}} {{.Status}}"
+c7a6dffbcd70
+NAMESSTATUS
+===== ub2 remove local bluesvc containers =====
+docker rm -f $(docker ps -aq --filter name=bluesvc) 2>/dev/null || true
+docker ps --filter name=bluesvc --format "table {{.Names}} {{.Status}}"
+97b607f15055
+da4a7b3327cd
+NAMESSTATUS
+===== ub3 remove local bluesvc containers =====
+docker rm -f $(docker ps -aq --filter name=bluesvc) 2>/dev/null || true
+docker ps --filter name=bluesvc --format "table {{.Names}} {{.Status}}"
+7d26a39fa30d
+NAMESSTATUS
+===== final bluesvc 3-replica convergence =====
+docker service ls
+docker service ps bluesvc --no-trunc
+ID             NAME      MODE         REPLICAS   IMAGE                           PORTS
+vuyr9h157yry   bluesvc   replicated   5/3        ruivaladas/ws-simple-2:latest   *:3000->80/tcp
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE            ERROR                         PORTS
+twvx1m4uo165nw1i5ua3tub1c   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running 9 seconds ago
+vt62sco8d7htvpzwbgdn2dmos    \_ bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Failed 15 seconds ago    "task: non-zero exit (137)"
+z48nwxyhucejg2anaibt4s4i3    \_ bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 3 minutes ago
+m7ekaanjvep7u5q4se8kt9zbi   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 13 seconds ago
+qama36z9t3dvteqbnh0s3rsbn    \_ bluesvc.2   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Shutdown        Failed 18 seconds ago    "task: non-zero exit (137)"
+qvfquqvqpglijltetd9olt9j7   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running 11 seconds ago
+r7b4evc8gdk3legr0rnzmoiyb    \_ bluesvc.3   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed 17 seconds ago    "task: non-zero exit (137)"
+ugu9xmmoe9k2dq5mbl5x33ft3   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 3 minutes ago
+xeif1oc8rkig0bafpogo12w59   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed 2 minutes ago     "task: non-zero exit (2)"

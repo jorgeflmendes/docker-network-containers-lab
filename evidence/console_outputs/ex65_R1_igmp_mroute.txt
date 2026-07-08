@@ -1,0 +1,133 @@
+��������"Connected to Dynamips VM "R1" (ID 1, type c3725) - Console port
+Press ENTER to get the prompt.
+UPDOWN: Interface FastEthernet1/0, changed state to up
+R1#write memory
+Building configuration...
+[OK]
+R1#
+*Mar  1 00:00:40.075: %SYS-5-CONFIG_I: Configured from console by console
+*Mar  1 00:00:40.363: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet1/0, changed state to up
+*Mar  1 00:00:40.731: %PIM-5-DRCHG: DR change from neighbor 0.0.0.0 to 20.0.0.254 on interface FastEthernet0/0
+*Mar  1 00:00:40.763: %PIM-5-DRCHG: DR change from neighbor 0.0.0.0 to 21.0.0.254 on interface FastEthernet0/1show ip interface brief
+Interface                  IP-Address      OK? Method Status                Protocol
+FastEthernet0/0            20.0.0.254      YES manual up                    up
+FastEthernet0/1            21.0.0.254      YES manual up                    up
+FastEthernet1/0            unassigned      YES manual up                    up
+NVI0                       unassigned      NO  unset  up                    up
+R1#show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+E1 - OSPF external type 1, E2 - OSPF external type 2
+i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+ia - IS-IS inter area, * - candidate default, U - per-user static route
+o - ODR, P - periodic downloaded static route
+Gateway of last resort is not set
+21.0.0.0/24 is subnetted, 1 subnets
+C       21.0.0.0 is directly connected, FastEthernet0/1
+20.0.0.0/24 is subnetted, 1 subnets
+C       20.0.0.0 is directly connected, FastEthernet0/0
+R1#show ip pim interface
+Address          Interface                Ver/   Nbr    Query  DR     DR
+Mode   Count  Intvl  Prior
+20.0.0.254       FastEthernet0/0          v2/D   0      30     1      20.0.0.254
+21.0.0.254       FastEthernet0/1          v2/D   0      30     1      21.0.0.254
+R1#show ip igmp groups
+IGMP Connected Group Membership
+Group Address    Interface                Uptime    Expires   Last Reporter   Group Accounted
+224.0.1.40       FastEthernet0/0          00:00:06  00:02:53  20.0.0.254
+R1#
+*Mar  1 00:00:51.803: %DHCP-6-ADDRESS_ASSIGN: Interface FastEthernet1/0 assigned DHCP address 192.168.205.129, mask 255.255.255.0, hostname R1
+R1#
+R1#enable
+R1#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#int f1/0
+R1(config-if)#shut
+R1(config-if)#no shut
+R1(config-if)#end
+R1#show ip interface brief
+Interface                  IP-Address      OK? Method Status                Protocol
+FastEthernet0/0            20.0.0.254      YES manual up                    up
+FastEthernet0/1            21.0.0.254      YES manual up                    up
+FastEthernet1/0            unassigned      YES DHCP   up                    up
+NVI0                       unassigned      NO  unset  up                    up
+R1#show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+E1 - OSPF external type 1, E2 - OSPF external type 2
+i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+ia - IS-IS inter area, * - candidate default, U - per-user static route
+o - ODR, P - periodic downloaded static route
+Gateway of last resort is 192.168.205.2 to network 0.0.0.0
+21.0.0.0/24 is subnetted, 1 subnets
+C       21.0.0.0 is directly connected, FastEthernet0/1
+20.0.0.0/24 is subnetted, 1 subnets
+C       20.0.0.0 is directly connected, FastEthernet0/0
+S*   0.0.0.0/0 [254/0] via 192.168.205.2
+R1#
+*Mar  1 00:01:40.567: %SYS-5-CONFIG_I: Configured from console by console
+R1#
+*Mar  1 00:01:47.599: %DHCP-6-ADDRESS_ASSIGN: Interface FastEthernet1/0 assigned DHCP address 192.168.42.250, mask 255.255.255.0, hostname R1
+R1#
+R1#
+R1#show ip igmp groups
+IGMP Connected Group Membership
+Group Address    Interface                Uptime    Expires   Last Reporter   Group Accounted
+239.1.1.3        FastEthernet0/1          00:00:26  00:02:35  21.0.0.1
+239.1.1.3        FastEthernet0/0          00:00:32  00:02:33  20.0.0.2
+239.1.1.6        FastEthernet0/0          00:00:32  00:02:35  20.0.0.2
+224.0.1.40       FastEthernet0/0          01:53:06  00:02:23  20.0.0.254
+R1#show ip mroute 239.1.1.3
+IP Multicast Routing Table
+Flags: D - Dense, S - Sparse, B - Bidir Group, s - SSM Group, C - Connected,
+L - Local, P - Pruned, R - RP-bit set, F - Register flag,
+T - SPT-bit set, J - Join SPT, M - MSDP created entry,
+X - Proxy Join Timer Running, A - Candidate for MSDP Advertisement,
+U - URD, I - Received Source Specific Host Report,
+Z - Multicast Tunnel, z - MDT-data group sender,
+Y - Joined MDT-data group, y - Sending to MDT-data group
+Outgoing interface flags: H - Hardware switched, A - Assert winner
+Timers: Uptime/Expires
+Interface state: Interface, Next-Hop or VCD, State/Mode
+(*, 239.1.1.3), 00:00:34/stopped, RP 0.0.0.0, flags: DC
+Incoming interface: Null, RPF nbr 0.0.0.0
+Outgoing interface list:
+FastEthernet0/1, Forward/Dense, 00:00:27/00:00:00
+FastEthernet0/0, Forward/Dense, 00:00:34/00:00:00
+(20.0.0.1, 239.1.1.3), 00:00:34/00:02:54, flags: T
+Incoming interface: FastEthernet0/0, RPF nbr 0.0.0.0
+Outgoing interface list:
+FastEthernet0/1, Forward/Dense, 00:00:27/00:00:00
+(20.0.0.2, 239.1.1.3), 00:00:30/00:02:54, flags: T
+Incoming interface: FastEthernet0/0, RPF nbr 0.0.0.0
+Outgoing interface list:
+FastEthernet0/1, Forward/Dense, 00:00:27/00:00:00
+(21.0.0.1, 239.1.1.3), 00:00:27/00:02:54, flags: T
+Incoming interface: FastEthernet0/1, RPF nbr 0.0.0.0
+Outgoing interface list:
+FastEthernet0/0, Forward/Dense, 00:00:27/00:00:00
+R1#show ip mroute 239.1.1.6
+IP Multicast Routing Table
+Flags: D - Dense, S - Sparse, B - Bidir Group, s - SSM Group, C - Connected,
+L - Local, P - Pruned, R - RP-bit set, F - Register flag,
+T - SPT-bit set, J - Join SPT, M - MSDP created entry,
+X - Proxy Join Timer Running, A - Candidate for MSDP Advertisement,
+U - URD, I - Received Source Specific Host Report,
+Z - Multicast Tunnel, z - MDT-data group sender,
+Y - Joined MDT-data group, y - Sending to MDT-data group
+Outgoing interface flags: H - Hardware switched, A - Assert winner
+Timers: Uptime/Expires
+Interface state: Interface, Next-Hop or VCD, State/Mode
+(*, 239.1.1.6), 00:00:35/stopped, RP 0.0.0.0, flags: DC
+Incoming interface: Null, RPF nbr 0.0.0.0
+Outgoing interface list:
+FastEthernet0/0, Forward/Dense, 00:00:35/00:00:00
+(20.0.0.1, 239.1.1.6), 00:00:35/00:02:24, flags: PT
+Incoming interface: FastEthernet0/0, RPF nbr 0.0.0.0
+Outgoing interface list: Null
+(20.0.0.2, 239.1.1.6), 00:00:32/00:02:27, flags: PT
+Incoming interface: FastEthernet0/0, RPF nbr 0.0.0.0
+Outgoing interface list: Null
+R1#

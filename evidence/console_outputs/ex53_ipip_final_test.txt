@@ -1,0 +1,37 @@
+===== ub1 FORWARD =====
+iptables -P FORWARD ACCEPT; iptables -S FORWARD | head -20; printf '\nYEND1779980521316:%s\n' $?
+-P FORWARD ACCEPT
+-A FORWARD -j DOCKER-USER
+-A FORWARD -j DOCKER-ISOLATION-STAGE-1
+-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -o docker0 -j DOCKER
+-A FORWARD -i docker0 ! -o docker0 -j ACCEPT
+-A FORWARD -i docker0 -o docker0 -j ACCEPT
+YEND1779980521316:0
+[?200
+===== ub2 FORWARD =====
+iptables -P FORWARD ACCEPT; iptables -S FORWARD | head -20; printf '\nYEND1779980521810:%s\n' $?
+-P FORWARD ACCEPT
+-A FORWARD -j DOCKER-USER
+-A FORWARD -j DOCKER-ISOLATION-STAGE-1
+-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -o docker0 -j DOCKER
+-A FORWARD -i docker0 ! -o docker0 -j ACCEPT
+-A FORWARD -i docker0 -o docker0 -j ACCEPT
+YEND1779980521810:0
+===== final IPIP test =====
+ip netns exec red ping -c 4 -W 2 10.20.20.1; ip -s tunnel show tun-red; printf '\nYEND1779980522318:%s\n' $?
+PING 10.20.20.1 (10.20.20.1) 56(84) bytes of data.
+64 bytes from 10.20.20.1: icmp_seq=1 ttl=62 time=9.91 ms
+64 bytes from 10.20.20.1: icmp_seq=2 ttl=62 time=1.63 ms
+64 bytes from 10.20.20.1: icmp_seq=3 ttl=62 time=2.00 ms
+64 bytes from 10.20.20.1: icmp_seq=4 ttl=62 time=1.63 ms
+--- 10.20.20.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3013ms
+rtt min/avg/max/mdev = 1.625/3.791/9.909/3.535 ms
+tun-red: ip/ip remote 20.0.0.2 local 20.0.0.1 ttl inherit
+RX: Packets    Bytes        Errors CsumErrs OutOfSeq Mcasts
+4          336          0      0        0        0
+TX: Packets    Bytes        Errors DeadLoop NoRoute  NoBufs
+4          336          0      0        0        0
+YEND1779980522318:0

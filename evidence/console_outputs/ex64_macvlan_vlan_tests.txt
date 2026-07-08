@@ -1,0 +1,81 @@
+===== ub1 macvlan/VLAN setup =====
+set +e
+for c in b1 b2 r1 r2; do docker rm -f $c 2>/dev/null; done
+docker network rm bluevlan redvlan 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+set -e
+ip link add link ens3 name ens3.10 type vlan id 10
+ip link add link ens3 name ens3.20 type vlan id 20
+ip link set ens3.10 up
+ip link set ens3.20 up
+docker network create -d macvlan --subnet=10.60.10.0/24 -o parent=ens3.10 bluevlan
+docker network create -d macvlan --subnet=10.60.20.0/24 -o parent=ens3.20 redvlan
+ip -d link show ens3.10 | head -3
+ip -d link show ens3.20 | head -3
+docker network ls --filter driver=macvlan
+1ddb6d53091e04b72e7340313185c82528ccac864ac802db81746aaf1339c619
+108e67c4b8778ab0a1d2359115784139cf995c60729d5dd97edd6ce58e42fc98
+8: ens3.10@ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+link/ether 0c:0c:af:21:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 0 maxmtu 65535
+vlan protocol 802.1Q id 10 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+9: ens3.20@ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+link/ether 0c:0c:af:21:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 0 maxmtu 65535
+vlan protocol 802.1Q id 20 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NETWORK ID     NAME       DRIVER    SCOPE
+1ddb6d53091e   bluevlan   macvlan   local
+108e67c4b877   redvlan    macvlan   local
+===== ub2 macvlan/VLAN setup =====
+set +e
+for c in b1 b2 r1 r2; do docker rm -f $c 2>/dev/null; done
+docker network rm bluevlan redvlan 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+set -e
+ip link add link ens3 name ens3.10 type vlan id 10
+ip link add link ens3 name ens3.20 type vlan id 20
+ip link set ens3.10 up
+ip link set ens3.20 up
+docker network create -d macvlan --subnet=10.60.10.0/24 -o parent=ens3.10 bluevlan
+docker network create -d macvlan --subnet=10.60.20.0/24 -o parent=ens3.20 redvlan
+ip -d link show ens3.10 | head -3
+ip -d link show ens3.20 | head -3
+docker network ls --filter driver=macvlan
+ee878b80e7fe2909f5f7ca29b246ad322d274849debee56b3988e6f36809378c
+4375a7b960b86fe540d9e1951d72cb58e66df29f55ca4f94e9d94dfba76f1367
+8: ens3.10@ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+link/ether 0c:0f:72:84:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 0 maxmtu 65535
+vlan protocol 802.1Q id 10 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+9: ens3.20@ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+link/ether 0c:0f:72:84:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 0 maxmtu 65535
+vlan protocol 802.1Q id 20 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NETWORK ID     NAME       DRIVER    SCOPE
+ee878b80e7fe   bluevlan   macvlan   local
+4375a7b960b8   redvlan    macvlan   local
+VEND1779980594497:0
+roo
+===== ub1 containers =====
+set -e
+docker run -dit --name b1 --network bluevlan --ip 10.60.10.1 alpine sh
+docker run -dit --name r1 --network redvlan --ip 10.60.20.1 alpine sh
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+233af50bb4335a423d25cf8fb94988fadd1a37f548d4df3458d0d47b4e59f58d
+docker: Error response from daemon: Address already in use.
+===== ub2 containers =====
+set -e
+docker run -dit --name b2 --network bluevlan --ip 10.60.10.2 alpine sh
+docker run -dit --name r2 --network redvlan --ip 10.60.20.2 alpine sh
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+794c68322580ea9d807d8aad7a8db83aaabadb9f7e80862f2b941927b4e41061
+docker: Error response from daemon: failed to create shim: OCI runtime create failed: runc create failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown.
+===== testes 6.4 a partir de ub1 =====
+docker exec b1 ping -c 3 -W 2 10.60.10.2
+docker exec r1 ping -c 3 -W 2 10.60.20.2
+(docker exec b1 ping -c 3 -W 2 10.60.20.2 || true)
+docker exec b1 ip route
+docker exec r1 ip route
+Error response from daemon: readlink /var/lib/docker/overlay2/l: invalid argument
+Error: No such container: r1
+Error response from daemon: readlink /var/lib/docker/overlay2/l: invalid argument
+Error response from daemon: readlink /var/lib/docker/overlay2/l: invalid argument
+Error: No such container: r1

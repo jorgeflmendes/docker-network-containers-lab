@@ -1,0 +1,151 @@
+===== ub1 VXLAN setup =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker network rm bluenet rednet bluevlan redvlan 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+iptables -P FORWARD ACCEPT
+set -e
+ip link add blue type vxlan id 33 group 239.1.1.3 ttl 5 dev ens3 dstport 4789
+ip link add red type vxlan id 66 group 239.1.1.6 ttl 5 dev ens3 dstport 4789
+ip link set blue up
+ip link set red up
+ip addr add 10.0.0.101/24 dev blue
+ip addr add 11.0.0.101/24 dev red
+docker network create -d macvlan --subnet=10.0.0.0/24 --gateway=10.0.0.101 -o parent=blue bluenet
+docker network create -d macvlan --subnet=11.0.0.0/24 --gateway=11.0.0.101 -o parent=red rednet
+docker run -dit --name b1 --network bluenet --ip 10.0.0.1 alpine sleep 3600
+docker run -dit --name b2 --network bluenet --ip 10.0.0.2 alpine sleep 3600
+docker run -dit --name r1 --network rednet --ip 11.0.0.1 alpine sleep 3600
+docker run -dit --name r2 --network rednet --ip 11.0.0.2 alpine sleep 3600
+ip -d link show blue | grep vxlan
+ip -d link show red | grep vxlan
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+b1
+r1
+bluevlan
+redvlan
+2bbc1ccdf5281cb62f3995937397673826bf4f3180654e9409daa179cee7c647
+6f6507733ad282327515e465338429b97491a67ad34323b8503b36a7aca7b411
+cbf5c00e51cba719b7ed31308a579d7660ffef6cc266b9115204ca10faf91ea2
+ce28e19bb90096b6e502eb697b20c0a5efa3d45ddd2a97a114e40fff70bd82c6
+ad9c6218d77153997240407cd4d45ae66a7ef5307dcfd443816f02a6063b99f0
+ba96cacaaa018e348bcb3309b4107962ad9c28911de249897f4d42ec334393e4
+vxlan id 33 group 239.1.1.3 dev ens3 srcport 0 0 dstport 4789 ttl 5 ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+vxlan id 66 group 239.1.1.6 dev ens3 srcport 0 0 dstport 4789 ttl 5 ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NAMESNETWORKSSTATUS
+r2rednetUp Less than a second
+r1rednetUp Less than a second
+b2bluenetUp Less than a second
+b1bluenetUp 1 second
+XEND1779980987636:0
+===== ub2 VXLAN setup =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker network rm bluenet rednet bluevlan redvlan 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+iptables -P FORWARD ACCEPT
+set -e
+ip link add blue type vxlan id 33 group 239.1.1.3 ttl 5 dev ens3 dstport 4789
+ip link add red type vxlan id 66 group 239.1.1.6 ttl 5 dev ens3 dstport 4789
+ip link set blue up
+ip link set red up
+ip addr add 10.0.0.102/24 dev blue
+ip addr add 11.0.0.102/24 dev red
+docker network create -d macvlan --subnet=10.0.0.0/24 --gateway=10.0.0.102 -o parent=blue bluenet
+docker network create -d macvlan --subnet=11.0.0.0/24 --gateway=11.0.0.102 -o parent=red rednet
+docker run -dit --name b3 --network bluenet --ip 10.0.0.3 alpine sleep 3600
+docker run -dit --name b4 --network bluenet --ip 10.0.0.4 alpine sleep 3600
+docker run -dit --name r3 --network rednet --ip 11.0.0.3 alpine sleep 3600
+docker run -dit --name r4 --network rednet --ip 11.0.0.4 alpine sleep 3600
+ip -d link show blue | grep vxlan
+ip -d link show red | grep vxlan
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+b2
+b5
+bluevlan
+redvlan
+e9c0f4df38c3c86cfae8544cdbabf9ee53e75a0a54215a422a0953567e06adc4
+1d6f4b4c8fbb37c2762b09b73face6584186df7863bae8c7fbff09dbc959cf6b
+4752aa4c4d1557601166cd9a12e4178f6d4d33c4f077438a5f4df958da893b61
+361a1fac86a18824d0029a29c58189ba0826a3cb91eeb97b134bd6988e324925
+8486bd69d0d7b78804b3597e7d54eb76c3442dae7317d74d02ed4c36d8de0010
+4eb69fb40051be3aef20d270210bc6fea2d1dadcdb71789fc5ef5a7ddee4214f
+vxlan id 33 group 239.1.1.3 dev ens3 srcport 0 0 dstport 4789 ttl 5 ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+vxlan id 66 group 239.1.1.6 dev ens3 srcport 0 0 dstport 4789 ttl 5 ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NAMESNETWORKSSTATUS
+r4rednetUp Less than a second
+r3rednetUp Less than a second
+b4bluenetUp 1 second
+b3bluenetUp 1 second
+XEND1779980990991:0
+===== ub3 VXLAN setup =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker network rm bluenet rednet bluevlan redvlan 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+iptables -P FORWARD ACCEPT
+set -e
+ip link add blue type vxlan id 33 group 239.1.1.3 ttl 5 dev ens3 dstport 4789
+ip link set blue up
+ip addr add 10.0.0.103/24 dev blue
+docker network create -d macvlan --subnet=10.0.0.0/24 --gateway=10.0.0.103 -o parent=blue bluenet
+docker run -dit --name b5 --network bluenet --ip 10.0.0.5 alpine sleep 3600
+docker run -dit --name b6 --network bluenet --ip 10.0.0.6 alpine sleep 3600
+ip -d link show blue | grep vxlan
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+c65da938fa7f4412b78a602e1eec73e6e1751ca07b0f0b18edf5e706d12f48d7
+9d3a9aed546c8d77d02e02daa418807540a4bdef4fdf302bf8d359a215bc9727
+68764dc8628125b49548f98b5e6576773359ad1d521fedfaf2358a5e616c5c6d
+vxlan id 33 group 239.1.1.3 dev ens3 srcport 0 0 dstport 4789 ttl 5 ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NAMESNETWORKSSTATUS
+b6bluenetUp Less than a second
+b5bluenetUp Less than a second
+XEND1779980994833:0
+===== testes finais 6.5 =====
+docker exec b1 ping -c 3 -W 2 10.0.0.2
+docker exec b1 ping -c 3 -W 2 10.0.0.3
+docker exec b2 ping -c 3 -W 2 10.0.0.6
+docker exec r1 ping -c 3 -W 2 11.0.0.3
+docker exec b1 ip neigh || true
+docker exec r1 ip neigh || true
+PING 10.0.0.2 (10.0.0.2): 56 data bytes
+64 bytes from 10.0.0.2: seq=0 ttl=64 time=2.421 ms
+64 bytes from 10.0.0.2: seq=1 ttl=64 time=0.081 ms
+64 bytes from 10.0.0.2: seq=2 ttl=64 time=1.892 ms
+--- 10.0.0.2 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.081/1.464/2.421 ms
+PING 10.0.0.3 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: seq=0 ttl=64 time=18.105 ms
+64 bytes from 10.0.0.3: seq=1 ttl=64 time=11.615 ms
+64 bytes from 10.0.0.3: seq=2 ttl=64 time=2.017 ms
+--- 10.0.0.3 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 2.017/10.579/18.105 ms
+PING 10.0.0.6 (10.0.0.6): 56 data bytes
+64 bytes from 10.0.0.6: seq=0 ttl=64 time=43.908 ms
+64 bytes from 10.0.0.6: seq=1 ttl=64 time=19.304 ms
+64 bytes from 10.0.0.6: seq=2 ttl=64 time=14.768 ms
+--- 10.0.0.6 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 14.768/25.993/43.908 ms
+PING 11.0.0.3 (11.0.0.3): 56 data bytes
+64 bytes from 11.0.0.3: seq=0 ttl=64 time=13.655 ms
+64 bytes from 11.0.0.3: seq=1 ttl=64 time=1.818 ms
+64 bytes from 11.0.0.3: seq=2 ttl=64 time=3.159 ms
+--- 11.0.0.3 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 1.818/6.210/13.655 ms
+10.0.0.3 dev eth0 lladdr 02:42:0a:00:00:03 ref 1 used 0/0/0 probes 4 REACHABLE
+10.0.0.2 dev eth0 lladdr 02:42:0a:00:00:02 ref 1 used 0/0/0 probes 4 REACHABLE
+11.0.0.3 dev eth0 lladdr 02:42:0b:00:00:03 ref 1 used 0/0/0 probes 4 REACHABLE
+XEND1779981002251:0

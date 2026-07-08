@@ -1,0 +1,253 @@
+set -e
+docker service rm bluesvc 2>/dev/null || true
+sleep 3
+docker service create --network blue --name bluesvc --replicas 5 --publish 3000:80 ruivaladas/ws-simple-2
+sleep 20
+docker service ls
+docker service ps bluesvc --no-trunc
+docker node ps --filter desired-state=running --format 'table {{.Node}} {{.Name}} {{.CurrentState}}' $(docker node ls -q)
+curl -s --max-time 3 http://20.0.0.1:3000/ || true
+curl -s --max-time 3 http://20.0.0.2:3000/ || true
+curl -s --max-time 3 http://21.0.0.1:3000/ || true
+vuyr9h157yryv2qpt1qaqntij
+overall progress: 0 out of 5 tasks
+1/5:
+2/5:
+3/5:
+4/5:
+5/5:
+1/5: pending
+2/5: pending
+3/5: pending
+4/5: pending
+5/5: pending
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: assigned
+5/5: assigned
+1/5: assigned
+2/5: assigned
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+overall progress: 0 out of 5 tasks
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+3/5: preparing
+overall progress: 0 out of 5 tasks
+1/5: preparing
+2/5: preparing
+3/5: preparing
+4/5: preparing
+5/5: preparing
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+overall progress: 0 out of 5 tasks
+3/5: preparing
+4/5: preparing
+5/5: preparing
+1/5: preparing
+2/5: preparing
+overall progress: 0 out of 5 tasks
+1/5: preparing
+2/5: ready
+3/5: preparing
+4/5: preparing
+5/5: preparing
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: ready
+5/5: starting
+1/5: preparing
+2/5: starting
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 0 out of 5 tasks
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+3/5: starting
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 0 out of 5 tasks
+2/5: starting
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 0 out of 5 tasks
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 0 out of 5 tasks
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+3/5: starting
+overall progress: 0 out of 5 tasks
+2/5: starting
+3/5: starting
+4/5: starting
+5/5: starting
+1/5: starting
+overall progress: 0 out of 5 tasks
+1/5: starting
+2/5: starting
+3/5: running
+4/5: starting
+5/5: starting
+overall progress: 1 out of 5 tasks
+3/5: running
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 1 out of 5 tasks
+5/5: starting
+1/5: starting
+2/5: starting
+3/5: running
+4/5: starting
+overall progress: 1 out of 5 tasks
+3/5: running
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 1 out of 5 tasks
+2/5: starting
+3/5: running
+4/5: starting
+5/5: starting
+1/5: starting
+overall progress: 1 out of 5 tasks
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+3/5: running
+overall progress: 1 out of 5 tasks
+3/5: running
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 1 out of 5 tasks
+3/5: running
+4/5: starting
+5/5: starting
+1/5: starting
+2/5: starting
+overall progress: 1 out of 5 tasks
+3/5: running
+4/5: starting
+5/5: running
+1/5: starting
+2/5: running
+overall progress: 3 out of 5 tasks
+2/5: running
+3/5: running
+4/5: starting
+5/5: running
+1/5: starting
+overall progress: 3 out of 5 tasks
+2/5: running
+3/5: running
+4/5: running
+5/5: running
+1/5: running
+overall progress: 5 out of 5 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+verify: Waiting 5 seconds to verify that tasks are stable...
+verify: Waiting 5 seconds to verify that tasks are stable...
+verify: Waiting 5 seconds to verify that tasks are stable...
+verify: Waiting 5 seconds to verify that tasks are stable...
+verify: Waiting 4 seconds to verify that tasks are stable...
+verify: Waiting 4 seconds to verify that tasks are stable...
+verify: Waiting 4 seconds to verify that tasks are stable...
+verify: Waiting 4 seconds to verify that tasks are stable...
+verify: Waiting 4 seconds to verify that tasks are stable...
+verify: Waiting 3 seconds to verify that tasks are stable...
+verify: Waiting 3 seconds to verify that tasks are stable...
+verify: Waiting 3 seconds to verify that tasks are stable...
+verify: Waiting 3 seconds to verify that tasks are stable...
+verify: Waiting 3 seconds to verify that tasks are stable...
+verify: Waiting 2 seconds to verify that tasks are stable...
+verify: Waiting 2 seconds to verify that tasks are stable...
+verify: Waiting 2 seconds to verify that tasks are stable...
+verify: Waiting 2 seconds to verify that tasks are stable...
+verify: Waiting 2 seconds to verify that tasks are stable...
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Service converged
+ID             NAME      MODE         REPLICAS   IMAGE                           PORTS
+vuyr9h157yry   bluesvc   replicated   5/5        ruivaladas/ws-simple-2:latest   *:3000->80/tcp
+ID                          NAME        IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE            ERROR     PORTS
+z48nwxyhucejg2anaibt4s4i3   bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running 25 seconds ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 27 seconds ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running 25 seconds ago
+ugu9xmmoe9k2dq5mbl5x33ft3   bluesvc.4   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running 25 seconds ago
+xeif1oc8rkig0bafpogo12w59   bluesvc.5   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running 25 seconds ago
+NODENAMECURRENT STATE
+ub3bluesvc.1Running 26 seconds ago
+ub1 \_ bluesvc.2Running 27 seconds ago
+ub1 \_ bluesvc.2Running 27 seconds ago
+ub1 \_ bluesvc.2Running 27 seconds ago
+ub2 \_ bluesvc.3Running 25 seconds ago
+ub2 \_ bluesvc.3Running 25 seconds ago
+ub3bluesvc.4Running 26 seconds ago
+ub2 \_ bluesvc.5Running 25 seconds ago
+ub2 \_ bluesvc.5Running 25 seconds ago
+You've hit 97b607f15055
+You've hit da4a7b3327cd
+You've hit 97b607f15055
+TEND1779981106379:0
+ro
