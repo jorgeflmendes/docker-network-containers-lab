@@ -2,7 +2,6 @@
 
 > A reproducible network-containers lab for Linux namespaces, IPIP tunnels, Docker macvlan/VLANs, multicast VXLAN, and Docker Swarm overlay networking.
 
-[![CI](https://img.shields.io/badge/CI-publication%20checks-lightgrey)](.github/workflows/ci.yml)
 [![GNS3](https://img.shields.io/badge/GNS3-lab-orange)](https://www.gns3.com/)
 [![Academic](https://img.shields.io/badge/Academic-SAAR%202025%2F2026-blue)](#academic-context)
 
@@ -65,7 +64,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries, evidence
 |   |-- ARCHITECTURE.md
 |   `-- report/
 |-- evidence/
-|-- scripts/
 |   `-- check_repository.py
 |-- .github/workflows/ci.yml
 |-- CONTRIBUTING.md
@@ -76,16 +74,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries, evidence
 - `docs/report/` - Final PDF report extract and selected figures.
 - `docs/ARCHITECTURE.md` - Topology, evidence flow, and publication boundary.
 - `evidence/` - Reviewed Linux, Docker, and capture-summary outputs.
-- `scripts/check_repository.py` - Portable repository hygiene check.
 - `.github/workflows/ci.yml` - CI-safe publication checks.
 
 ## Getting Started
-
-Clone the repository and run the portable publication checks:
-
-```powershell
-python scripts/check_repository.py
-```
 
 Full lab reproduction requires a local GNS3 environment with the corresponding Cisco/Linux appliances and the original lab topology. Those resources are not redistributed here.
 
