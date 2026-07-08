@@ -1,0 +1,111 @@
+"Connected to Dynamips VM "R1" (ID 1, type c3725) - Console port
+Press ENTER to get the prompt.
+tEthernet0/1, changed state to down
+*Mar  1 00:00:07.847: %LINK-5-CHANGED: Interface FastEthernet1/0, changed state to administratively down
+R1#no
+% Incomplete command.
+R1#
+R1#enable
+R1#terminal length 0
+R1#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#hostname R1
+R1(config)#no ip domain-lookup
+R1(config)#access-list 1 permit any
+R1(config)#ip nat inside source list 1 interface FastEthernet1/0 overload
+R1(config)#interface FastEthernet0/0
+R1(config-if)# ip address 20.0.0.254 255.255.255.0
+R1(config-if)# ip nat inside
+R1(config-if)# no shutdown
+R1(config-if)#interface FastEthernet0/1
+R1(config-if)# ip address 21.0.0.254 255.255.255.0
+R1(config-if)#
+*Mar  1 00:00:33.691: %LINEPROTO-5-UPDOWN: Line protocol on Interface NVI0, changed state to up
+R1(config-if)# ip nat inside
+R1(config-if)# no shutdown
+R1(config-if)#interface FastEthernet1/0
+R1(config-if)# ip address dhcp
+R1(config-if)# ip nat outside
+R1(config-if)# no shutdown
+R1(config-if)#ip multicast-routing
+R1(config)#interface FastEthernet0/0
+R1(config-if)#
+*Mar  1 00:00:36.511: %LINK-3-UPDOWN: Interface FastEthernet0/0, changed state to up
+*Mar  1 00:00:37.511: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to up
+R1(config-if)# ip pim dense-mode
+R1(config-if)#interface FastEthernet0/1
+R1(config-if)#
+*Mar  1 00:00:37.979: %LINK-3-UPDOWN: Interface FastEthernet0/1, changed state to up
+*Mar  1 00:00:38.979: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+R1(config-if)# ip pim dense-mode
+R1(config-if)#end
+R1#
+*Mar  1 00:00:39.363: %LINK-3-UPDOWN: Interface FastEthernet1/0, changed state to up
+R1#write memory
+Building configuration...
+[OK]
+R1#
+*Mar  1 00:00:40.075: %SYS-5-CONFIG_I: Configured from console by console
+*Mar  1 00:00:40.363: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet1/0, changed state to up
+*Mar  1 00:00:40.731: %PIM-5-DRCHG: DR change from neighbor 0.0.0.0 to 20.0.0.254 on interface FastEthernet0/0
+*Mar  1 00:00:40.763: %PIM-5-DRCHG: DR change from neighbor 0.0.0.0 to 21.0.0.254 on interface FastEthernet0/1show ip interface brief
+Interface                  IP-Address      OK? Method Status                Protocol
+FastEthernet0/0            20.0.0.254      YES manual up                    up
+FastEthernet0/1            21.0.0.254      YES manual up                    up
+FastEthernet1/0            unassigned      YES manual up                    up
+NVI0                       unassigned      NO  unset  up                    up
+R1#show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+E1 - OSPF external type 1, E2 - OSPF external type 2
+i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+ia - IS-IS inter area, * - candidate default, U - per-user static route
+o - ODR, P - periodic downloaded static route
+Gateway of last resort is not set
+21.0.0.0/24 is subnetted, 1 subnets
+C       21.0.0.0 is directly connected, FastEthernet0/1
+20.0.0.0/24 is subnetted, 1 subnets
+C       20.0.0.0 is directly connected, FastEthernet0/0
+R1#show ip pim interface
+Address          Interface                Ver/   Nbr    Query  DR     DR
+Mode   Count  Intvl  Prior
+20.0.0.254       FastEthernet0/0          v2/D   0      30     1      20.0.0.254
+21.0.0.254       FastEthernet0/1          v2/D   0      30     1      21.0.0.254
+R1#show ip igmp groups
+IGMP Connected Group Membership
+Group Address    Interface                Uptime    Expires   Last Reporter   Group Accounted
+224.0.1.40       FastEthernet0/0          00:00:06  00:02:53  20.0.0.254
+R1#
+*Mar  1 00:00:51.803: %DHCP-6-ADDRESS_ASSIGN: Interface FastEthernet1/0 assigned DHCP address 192.168.205.129, mask 255.255.255.0, hostname R1
+R1#
+R1#enable
+R1#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#int f1/0
+R1(config-if)#shut
+R1(config-if)#no shut
+R1(config-if)#end
+R1#show ip interface brief
+Interface                  IP-Address      OK? Method Status                Protocol
+FastEthernet0/0            20.0.0.254      YES manual up                    up
+FastEthernet0/1            21.0.0.254      YES manual up                    up
+FastEthernet1/0            unassigned      YES DHCP   up                    up
+NVI0                       unassigned      NO  unset  up                    up
+R1#show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+E1 - OSPF external type 1, E2 - OSPF external type 2
+i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+ia - IS-IS inter area, * - candidate default, U - per-user static route
+o - ODR, P - periodic downloaded static route
+Gateway of last resort is 192.168.205.2 to network 0.0.0.0
+21.0.0.0/24 is subnetted, 1 subnets
+C       21.0.0.0 is directly connected, FastEthernet0/1
+20.0.0.0/24 is subnetted, 1 subnets
+C       20.0.0.0 is directly connected, FastEthernet0/0
+S*   0.0.0.0/0 [254/0] via 192.168.205.2
+R1#
+*Mar  1 00:01:40.567: %SYS-5-CONFIG_I: Configured from console by console
+R1#

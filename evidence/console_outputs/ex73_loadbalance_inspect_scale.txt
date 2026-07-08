@@ -1,0 +1,207 @@
+===== load balancing and inspect before scale =====
+sleep 8
+docker service ls
+docker service ps bluesvc --no-trunc
+echo '--- requests via 20.0.0.1:3000 ---'
+for i in $(seq 1 10); do curl -s --max-time 3 http://20.0.0.1:3000/; done
+echo '--- requests via 20.0.0.2:3000 ---'
+for i in $(seq 1 5); do curl -s --max-time 3 http://20.0.0.2:3000/; done
+echo '--- requests via 21.0.0.1:3000 ---'
+for i in $(seq 1 5); do curl -s --max-time 3 http://21.0.0.1:3000/; done
+echo '--- network VNIs ---'
+docker network inspect ingress blue red --format '{{.Name}} {{index .Options "com.docker.network.driver.overlay.vxlanid_list"}} {{range .IPAM.Config}}{{.Subnet}} {{end}}'
+echo '--- interfaces of local bluesvc tasks via nsenter ---'
+for c in $(docker ps --filter name=bluesvc -q); do echo container=$c name=$(docker inspect -f '{{.Name}}' $c); pid=$(docker inspect -f '{{.State.Pid}}' $c); nsenter -t $pid -n ip -br addr; done
+ID             NAME      MODE         REPLICAS   IMAGE                           PORTS
+vuyr9h157yry   bluesvc   replicated   7/5        ruivaladas/ws-simple-2:latest   *:3000->80/tcp
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE                ERROR                       PORTS
+vt62sco8d7htvpzwbgdn2dmos   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running 43 seconds ago
+z48nwxyhucejg2anaibt4s4i3    \_ bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 2 minutes ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 2 minutes ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running 2 minutes ago
+ytdy1v3bcs4317d5s3cuc25jt   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running 43 seconds ago
+ugu9xmmoe9k2dq5mbl5x33ft3    \_ bluesvc.4   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 2 minutes ago
+epas955a2cwdcxllpgjmlumz5   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running about a minute ago
+xeif1oc8rkig0bafpogo12w59    \_ bluesvc.5   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed about a minute ago    "task: non-zero exit (2)"
+--- requests via 20.0.0.1:3000 ---
+You've hit 7d26a39fa30d
+You've hit f780fe93eff5
+You've hit bcf3179d7df8
+You've hit da4a7b3327cd
+You've hit c7a6dffbcd70
+You've hit 7d26a39fa30d
+You've hit f780fe93eff5
+You've hit bcf3179d7df8
+You've hit da4a7b3327cd
+You've hit c7a6dffbcd70
+--- requests via 20.0.0.2:3000 ---
+You've hit c7a6dffbcd70
+You've hit 7d26a39fa30d
+You've hit f780fe93eff5
+You've hit bcf3179d7df8
+You've hit da4a7b3327cd
+--- requests via 21.0.0.1:3000 ---
+You've hit 7d26a39fa30d
+You've hit f780fe93eff5
+You've hit bcf3179d7df8
+You've hit da4a7b3327cd
+You've hit c7a6dffbcd70
+--- network VNIs ---
+ingress 4096 10.0.0.0/24
+blue 4097 10.0.1.0/24
+red 4098 10.0.2.0/24
+--- interfaces of local bluesvc tasks via nsenter ---
+container=bcf3179d7df8 name=/bluesvc.5.epas955a2cwdcxllpgjmlumz5
+lo               UNKNOWN        127.0.0.1/8
+tunl0@NONE       DOWN
+eth1@if41        UP             10.0.0.11/24
+eth2@if43        UP             172.18.0.4/16
+eth0@if45        UP             10.0.1.11/24
+container=c7a6dffbcd70 name=/bluesvc.2.qama36z9t3dvteqbnh0s3rsbn
+lo               UNKNOWN        127.0.0.1/8
+tunl0@NONE       DOWN
+eth1@if35        UP             10.0.0.6/24
+eth2@if37        UP             172.18.0.3/16
+eth0@if39        UP             10.0.1.3/24
+===== scale down bluesvc =====
+docker service scale bluesvc=3
+sleep 15
+docker service ls
+docker service ps bluesvc --no-trunc
+echo 'autoscaling: Docker Swarm does not provide native metric-based autoscaling; scaling is manual or external.'
+bluesvc scaled to 3
+overall progress: 0 out of 3 tasks
+1/3:
+2/3:
+3/3:
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+3/3: task: non-zero exit (2)
+1/3: running
+2/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 5 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 4 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 4 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 4 seconds to verify that tasks are stable...
+2/3: running
+3/3: task: non-zero exit (2)
+1/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 4 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 4 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 3 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 3 seconds to verify that tasks are stable...
+2/3: running
+3/3: task: non-zero exit (2)
+1/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 3 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 3 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 3 seconds to verify that tasks are stable...
+3/3: task: non-zero exit (2)
+1/3: running
+2/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 2 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 2 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 2 seconds to verify that tasks are stable...
+2/3: running
+3/3: task: non-zero exit (2)
+1/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 2 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 1 seconds to verify that tasks are stable...
+2/3: running
+3/3: task: non-zero exit (2)
+1/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 1 seconds to verify that tasks are stable...
+2/3: running
+3/3: task: non-zero exit (2)
+1/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 1 seconds to verify that tasks are stable...
+1/3: running
+2/3: running
+3/3: task: non-zero exit (2)
+overall progress: 3 out of 3 tasks
+verify: Waiting 1 seconds to verify that tasks are stable...
+3/3: task: non-zero exit (2)
+1/3: running
+2/3: running
+overall progress: 3 out of 3 tasks
+verify: Waiting 1 seconds to verify that tasks are stable...
+verify: Service converged
+ID             NAME      MODE         REPLICAS   IMAGE                           PORTS
+vuyr9h157yry   bluesvc   replicated   5/3        ruivaladas/ws-simple-2:latest   *:3000->80/tcp
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE                ERROR                       PORTS
+vt62sco8d7htvpzwbgdn2dmos   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running about a minute ago
+z48nwxyhucejg2anaibt4s4i3    \_ bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 2 minutes ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 2 minutes ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running 2 minutes ago
+ugu9xmmoe9k2dq5mbl5x33ft3   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running 2 minutes ago
+xeif1oc8rkig0bafpogo12w59   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed about a minute ago    "task: non-zero exit (2)"
+autoscaling: Docker Swarm does not provide native metric-based autoscaling; scaling is manual or external.

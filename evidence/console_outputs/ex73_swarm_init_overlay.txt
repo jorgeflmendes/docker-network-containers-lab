@@ -1,0 +1,94 @@
+===== ub1 pre-swarm reset =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker service rm bluesvc redsvc 2>/dev/null
+docker network rm bluenet rednet bluevlan redvlan blue red 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+docker swarm leave --force 2>/dev/null
+iptables -P FORWARD ACCEPT
+docker info --format 'node={{.Name}} swarm={{.Swarm.LocalNodeState}}'
+b1
+b2
+r1
+r2
+bluenet
+rednet
+node=ub1 swarm=inactive
+roo
+===== ub2 pre-swarm reset =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker service rm bluesvc redsvc 2>/dev/null
+docker network rm bluenet rednet bluevlan redvlan blue red 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+docker swarm leave --force 2>/dev/null
+iptables -P FORWARD ACCEPT
+docker info --format 'node={{.Name}} swarm={{.Swarm.LocalNodeState}}'
+b3
+b4
+r3
+r4
+bluenet
+rednet
+node=ub2 swarm=inactive
+===== ub3 pre-swarm reset =====
+set +e
+for c in b1 b2 b3 b4 b5 b6 r1 r2 r3 r4; do docker rm -f $c 2>/dev/null; done
+docker service rm bluesvc redsvc 2>/dev/null
+docker network rm bluenet rednet bluevlan redvlan blue red 2>/dev/null
+ip link del blue 2>/dev/null
+ip link del red 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+docker swarm leave --force 2>/dev/null
+iptables -P FORWARD ACCEPT
+docker info --format 'node={{.Name}} swarm={{.Swarm.LocalNodeState}}'
+b5
+b6
+bluenet
+node=ub3 swarm=inactive
+===== ub1 swarm init =====
+docker swarm init --advertise-addr 20.0.0.1
+docker swarm join-token worker -q
+docker node ls
+Swarm initialized: current node (lvj2370r2ir9h9h2v35azsm2q) is now a manager.
+To add a worker to this swarm, run the following command:
+docker swarm join --token <redacted-worker-token> 20.0.0.1:2377
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+<redacted-worker-token>
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+lvj2370r2ir9h9h2v35azsm2q *   ub1        Ready     Active         Leader           20.10.12
+===== worker token obtained =====
+docker swarm join-token worker -q
+<redacted-worker-token>
+===== ub2 swarm join =====
+docker swarm join --token <redacted-worker-token> 20.0.0.1:2377
+docker info --format "node={{.Name}} swarm={{.Swarm.LocalNodeState}}"
+This node joined a swarm as a worker.
+node=ub2 swarm=active
+===== ub3 swarm join =====
+docker swarm join --token <redacted-worker-token> 20.0.0.1:2377
+docker info --format "node={{.Name}} swarm={{.Swarm.LocalNodeState}}"
+This node joined a swarm as a worker.
+node=ub3 swarm=active
+===== redes overlay swarm =====
+docker node ls
+docker network create --driver=overlay --attachable blue
+docker network create --driver=overlay --attachable red
+docker network ls | grep -E "blue|red|ingress"
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+lvj2370r2ir9h9h2v35azsm2q *   ub1        Ready     Active         Leader           20.10.12
+jgg3ov0nhfft076ekq28tvoem     ub2        Ready     Active                          20.10.12
+seud2bfgz8shl2pplji7tkn47     ub3        Ready     Active                          20.10.12
+i9zs5jxiha7mzv3tsp9ne0ifi
+ioy5k6lptcwzot9pi0pb3kntw
+i9zs5jxiha7m   blue              overlay   swarm
+6pp9lq615elz   ingress           overlay   swarm
+ioy5k6lptcwz   red               overlay   swarm
+SEN

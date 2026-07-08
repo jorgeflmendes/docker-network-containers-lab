@@ -1,0 +1,97 @@
+===== ub1 setup VLAN/macvlan =====
+set +e
+for c in b1 b2 r1 r2; do docker rm -f $c 2>/dev/null; done
+docker network rm bluevlan redvlan 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+set -e
+ip link add link ens3 name ens3.10 type vlan id 10
+ip link add link ens3 name ens3.20 type vlan id 20
+ip link set ens3.10 up
+ip link set ens3.20 up
+docker network create -d macvlan --subnet=10.60.10.0/24 -o parent=ens3.10 bluevlan
+docker network create -d macvlan --subnet=10.60.20.0/24 -o parent=ens3.20 redvlan
+ip -d link show ens3.10 | grep 'vlan protocol'
+ip -d link show ens3.20 | grep 'vlan protocol'
+docker network ls --filter driver=macvlan
+3e80095477b5ffa1628c4ce914bcf9a21409644290c59153a3e6db466d9fe4e6
+a803353afe3d765bcc4e7a3a52388c11e5e8eff73dc8c971868c2ff07bfafb13
+vlan protocol 802.1Q id 10 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+vlan protocol 802.1Q id 20 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NETWORK ID     NAME       DRIVER    SCOPE
+3e80095477b5   bluevlan   macvlan   local
+a803353afe3d   redvlan    macvlan   local
+MEND1779980903452:0
+===== ub2 setup VLAN/macvlan =====
+set +e
+for c in b1 b2 r1 r2; do docker rm -f $c 2>/dev/null; done
+docker network rm bluevlan redvlan 2>/dev/null
+ip link del ens3.10 2>/dev/null
+ip link del ens3.20 2>/dev/null
+set -e
+ip link add link ens3 name ens3.10 type vlan id 10
+ip link add link ens3 name ens3.20 type vlan id 20
+ip link set ens3.10 up
+ip link set ens3.20 up
+docker network create -d macvlan --subnet=10.60.10.0/24 -o parent=ens3.10 bluevlan
+docker network create -d macvlan --subnet=10.60.20.0/24 -o parent=ens3.20 redvlan
+ip -d link show ens3.10 | grep 'vlan protocol'
+ip -d link show ens3.20 | grep 'vlan protocol'
+docker network ls --filter driver=macvlan
+851965da0e38ad19c2943d5ed3819c26d0c6fdb40f599cbd445bbd6307bc1ab7
+18ea00d9808b2dbbdd6eb5b1855434bbf7a00c726f92c341991e697aaf6c5ca5
+vlan protocol 802.1Q id 10 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+vlan protocol 802.1Q id 20 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+NETWORK ID     NAME       DRIVER    SCOPE
+851965da0e38   bluevlan   macvlan   local
+18ea00d9808b   redvlan    macvlan   local
+===== ub1 containers =====
+set -e
+docker run -dit --name b1 --network bluevlan --ip 10.60.10.10 alpine sleep 3600
+docker run -dit --name r1 --network redvlan --ip 10.60.20.10 alpine sleep 3600
+0
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+1c7567d2c9296d281c095e0d21e297daf8d615be85d4feacb9b6596a5d4637ce
+ad356155c8ec8db9f7ef51f802afadefdd0a9e9e700382b6a4cd357ad3af78f0
+NAMESNETWORKSSTATUS
+r1redvlanUp Less than a second
+b1bluevlanUp Less than a second
+MEND1779980906025:0
+===== ub2 containers =====
+set -e
+docker run -dit --name b2 --network bluevlan --ip 10.60.10.20 alpine sleep 3600
+docker run -dit --name r2 --network redvlan --ip 10.60.20.20 alpine sleep 3600
+0
+docker ps --format 'table {{.Names}} {{.Networks}} {{.Status}}'
+3015ede2f66eab62a357ed31182e489c3e73f35220243c59f01e927ba6b99b98
+b5f158439c98b7d199527a63156e99e009332e74ac4d8836a137a597a07fca6f
+NAMESNETWORKSSTATUS
+r2redvlanUp Less than a second
+b2bluevlanUp Less than a second
+===== testes finais 6.4 =====
+docker exec b1 ping -c 3 -W 2 10.60.10.20
+docker exec r1 ping -c 3 -W 2 10.60.20.20
+(docker exec b1 ping -c 3 -W 2 10.60.20.20 || true)
+docker exec b1 ip route
+docker exec r1 ip route
+PING 10.60.10.20 (10.60.10.20): 56 data bytes
+64 bytes from 10.60.10.20: seq=0 ttl=64 time=11.121 ms
+64 bytes from 10.60.10.20: seq=1 ttl=64 time=1.371 ms
+64 bytes from 10.60.10.20: seq=2 ttl=64 time=1.566 ms
+--- 10.60.10.20 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 1.371/4.686/11.121 ms
+PING 10.60.20.20 (10.60.20.20): 56 data bytes
+64 bytes from 10.60.20.20: seq=0 ttl=64 time=21.209 ms
+64 bytes from 10.60.20.20: seq=1 ttl=64 time=1.486 ms
+64 bytes from 10.60.20.20: seq=2 ttl=64 time=1.490 ms
+--- 10.60.20.20 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 1.486/8.061/21.209 ms
+PING 10.60.20.20 (10.60.20.20): 56 data bytes
+--- 10.60.20.20 ping statistics ---
+3 packets transmitted, 0 packets received, 100% packet loss
+default via 10.60.10.1 dev eth0
+10.60.10.0/24 dev eth0 scope link  src 10.60.10.10
+default via 10.60.20.1 dev eth0
+10.60.20.0/24 dev eth0 scope link  src 10.60.20.10

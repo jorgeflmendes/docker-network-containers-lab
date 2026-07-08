@@ -1,0 +1,68 @@
+===== ub2 stop/restart old task =====
+CID=$(docker ps --filter name=bluesvc -q | head -1)
+echo "stopping container $CID on ub2"
+docker stop $CID
+echo "attempting manual restart of old task"
+docker start $CID || true
+docker ps -a --filter name=bluesvc --format 'table {{.ID}} {{.Names}} {{.Status}}'
+stopping container 97b607f15055 on ub2
+97b607f15055
+attempting manual restart of old task
+97b607f15055
+CONTAINER IDNAMESSTATUS
+97b607f15055bluesvc.5.xeif1oc8rkig0bafpogo12w59Up Less than a second
+da4a7b3327cdbluesvc.3.r7b4evc8gdk3legr0rnzmoiybUp 56 seconds
+===== manager after one task stopped =====
+docker service ps bluesvc --no-trunc
+docker service ls
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE                ERROR                       PORTS
+z48nwxyhucejg2anaibt4s4i3   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running about a minute ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running about a minute ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running about a minute ago
+ugu9xmmoe9k2dq5mbl5x33ft3   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running about a minute ago
+epas955a2cwdcxllpgjmlumz5   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 3 seconds ago
+xeif1oc8rkig0bafpogo12w59    \_ bluesvc.5   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed 8 seconds ago         "task: non-zero exit (2)"
+ID             NAME      MODE         REPLICAS   IMAGE                           PORTS
+vuyr9h157yry   bluesvc   replicated   5/5        ruivaladas/ws-simple-2:latest   *:3000->80/tcp
+===== ub3 swarm leave =====
+docker swarm leave
+docker info --format "node={{.Name}} swarm={{.Swarm.LocalNodeState}}"
+Node left the swarm.
+node=ub3 swarm=inactive
+[?200
+===== manager after ub3 leave =====
+docker node ls
+docker service ps bluesvc --no-trunc
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+lvj2370r2ir9h9h2v35azsm2q *   ub1        Ready     Active         Leader           20.10.12
+jgg3ov0nhfft076ekq28tvoem     ub2        Ready     Active                          20.10.12
+seud2bfgz8shl2pplji7tkn47     ub3        Ready     Active                          20.10.12
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE                ERROR                       PORTS
+z48nwxyhucejg2anaibt4s4i3   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running about a minute ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running about a minute ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running about a minute ago
+ugu9xmmoe9k2dq5mbl5x33ft3   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Running about a minute ago
+epas955a2cwdcxllpgjmlumz5   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 13 seconds ago
+xeif1oc8rkig0bafpogo12w59    \_ bluesvc.5   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed 19 seconds ago        "task: non-zero exit (2)"
+===== ub3 rejoin =====
+docker swarm join --token <redacted-worker-token> 20.0.0.1:2377
+docker info --format "node={{.Name}} swarm={{.Swarm.LocalNodeState}}"
+This node joined a swarm as a worker.
+node=ub3 swarm=active
+===== manager after ub3 rejoin =====
+docker node ls
+docker service ps bluesvc --no-trunc
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+lvj2370r2ir9h9h2v35azsm2q *   ub1        Ready     Active         Leader           20.10.12
+jgg3ov0nhfft076ekq28tvoem     ub2        Ready     Active                          20.10.12
+cik665fzowwanszs2cfmj7rcj     ub3        Ready     Active                          20.10.12
+seud2bfgz8shl2pplji7tkn47     ub3        Down      Active                          20.10.12
+ID                          NAME            IMAGE                                                                                                   NODE      DESIRED STATE   CURRENT STATE                ERROR                       PORTS
+vt62sco8d7htvpzwbgdn2dmos   bluesvc.1       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Starting 1 second ago
+z48nwxyhucejg2anaibt4s4i3    \_ bluesvc.1   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running about a minute ago
+qama36z9t3dvteqbnh0s3rsbn   bluesvc.2       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running about a minute ago
+r7b4evc8gdk3legr0rnzmoiyb   bluesvc.3       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Running         Running about a minute ago
+ytdy1v3bcs4317d5s3cuc25jt   bluesvc.4       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Running         Starting 1 second ago
+ugu9xmmoe9k2dq5mbl5x33ft3    \_ bluesvc.4   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub3       Shutdown        Running about a minute ago
+epas955a2cwdcxllpgjmlumz5   bluesvc.5       ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub1       Running         Running 24 seconds ago
+xeif1oc8rkig0bafpogo12w59    \_ bluesvc.5   ruivaladas/ws-simple-2:latest@sha256:2b95be57f92735a8559ff3f66e075c9532af4d04a9fdf1ca85b2000695804f6a   ub2       Shutdown        Failed 29 seconds ago        "task: non-zero exit (2)"

@@ -1,0 +1,36 @@
+===== ub1 corre??o =====
+ip route replace 10.20.20.0/24 dev tun-red; ip -br addr show dev tun-red; ip -br addr show dev veth-red-host; ip route show 10.20.20.0/24; ip netns exec red ping -c 2 -W 2 10.10.10.254; printf '\nZEND1779980497160:%s\n' $?
+tun-red@NONE     UNKNOWN        172.31.0.1/30 fe80::200:5efe:1400:1/64
+veth-red-host@if5 UP             10.10.10.254/24 fe80::2ce5:75ff:fe97:f60e/64
+10.20.20.0/24 dev tun-red scope link
+PING 10.10.10.254 (10.10.10.254) 56(84) bytes of data.
+64 bytes from 10.10.10.254: icmp_seq=1 ttl=64 time=0.926 ms
+64 bytes from 10.10.10.254: icmp_seq=2 ttl=64 time=0.060 ms
+--- 10.10.10.254 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1043ms
+rtt min/avg/max/mdev = 0.060/0.493/0.926/0.433 ms
+ZEND1779980497160:0
+[?20
+===== ub2 corre??o =====
+ip route replace 10.10.10.0/24 dev tun-blue; ip -br addr show dev tun-blue; ip -br addr show dev veth-blue-host; ip route show 10.10.10.0/24; ip netns exec blue ping -c 2 -W 2 10.20.20.254; printf '\nZEND1779980498717:%s\n' $?
+tun-blue@NONE    UNKNOWN        172.31.0.2/30 fe80::200:5efe:1400:2/64
+veth-blue-host@if5 UP             10.20.20.254/24 fe80::a027:b1ff:fe1c:2101/64
+10.10.10.0/24 dev tun-blue scope link
+PING 10.20.20.254 (10.20.20.254) 56(84) bytes of data.
+64 bytes from 10.20.20.254: icmp_seq=1 ttl=64 time=1.87 ms
+64 bytes from 10.20.20.254: icmp_seq=2 ttl=64 time=0.063 ms
+--- 10.20.20.254 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.063/0.964/1.866/0.901 ms
+ZEND1779980498717:0
+===== corrected IPIP test =====
+ip netns exec red ping -c 4 -W 2 10.20.20.1; ip -s tunnel show tun-red; printf '\nZEND1779980500258:%s\n' $?
+PING 10.20.20.1 (10.20.20.1) 56(84) bytes of data.
+--- 10.20.20.1 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 3081ms
+tun-red: ip/ip remote 20.0.0.2 local 20.0.0.1 ttl inherit
+RX: Packets    Bytes        Errors CsumErrs OutOfSeq Mcasts
+0          0            0      0        0        0
+TX: Packets    Bytes        Errors DeadLoop NoRoute  NoBufs
+0          0            0      0        0        0
+ZEND1779980500258:0
