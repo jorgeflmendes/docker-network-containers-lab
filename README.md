@@ -29,6 +29,8 @@ SAAR / Advanced Network Security and Architectures at Instituto Superior Tecnico
 
 ## Architecture
 
+![Containers Topology](docs/report/assets/2.3a.png)
+
 ```mermaid
 flowchart LR
 UB1["ub1\nnamespace / Docker / Swarm manager"] --> R1["Routed underlay"]
