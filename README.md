@@ -1,113 +1,72 @@
-# Docker Network Containers Lab
+# Container Networking
 
-> A reproducible network-containers lab for Linux namespaces, IPIP tunnels, Docker macvlan/VLANs, multicast VXLAN, and Docker Swarm overlay networking.
 
-[![GNS3](https://img.shields.io/badge/GNS3-lab-orange)](https://www.gns3.com/)
-[![Academic](https://img.shields.io/badge/Academic-SAAR%202025%2F2026-blue)](#academic-context)
+Linux networking scripts for IPIP namespaces, VLAN-backed macvlan networks, multicast VXLAN overlays and Docker Swarm services.
 
 > [!WARNING]
-> This repository documents controlled academic network-security lab work. Run the commands and scenarios only in isolated environments where you have authorization. Licensed appliance images, course handouts, raw packet captures, and local lab state are intentionally excluded.
+> These scripts create interfaces, routes, Docker networks and Swarm state. Run them only on an isolated Linux host.
 
-## Overview
+## What it covers
 
-This repository packages the SAAR Lab 2.3 network-containers work as a practical container-networking project. It connects namespaces across hosts, validates VLAN-backed macvlan isolation, builds VXLAN overlays over a routed underlay, and analyzes Docker Swarm services and routing mesh behavior.
+- IPIP between Linux network namespaces.
+- VLAN subinterfaces and Docker macvlan networks.
+- Multicast VXLAN interfaces with macvlan endpoints.
+- Docker Swarm initialization and replicated HTTP services.
 
-The repository is organized for public review: report source, architecture notes, selected evidence, CI-safe validation, and publication hygiene files are kept separate from generated or restricted lab artefacts.
-
-## Academic Context
-
-SAAR / Advanced Network Security and Architectures at Instituto Superior Tecnico. The lab focuses on Linux networking primitives, Docker network drivers, overlay encapsulation, service distribution, and packet-capture interpretation.
-
-## Key Features
-
-- Cross-host Linux namespace communication through IPIP tunnels.
-- Docker macvlan networks backed by VLAN subinterfaces and isolation tests.
-- Linux VXLAN overlays using multicast groups and routed underlay support.
-- Docker Swarm replicated services, self-healing, scaling, routing mesh, and overlay VNIs.
-- Command outputs and tshark summaries without raw packet captures.
-
-## Architecture
-
-![Containers Topology](docs/report/assets/2.3a.png)
+## Topology
 
 ```mermaid
 flowchart LR
-UB1["ub1\nnamespace / Docker / Swarm manager"] --> R1["Routed underlay"]
-UB2["ub2\nnamespace / Docker / worker"] --> R1
-UB3["ub3\nDocker / worker"] --> R1
-UB1 <-. IPIP / VLAN / VXLAN / Swarm overlay .-> UB2
-UB1 <-. VXLAN / Swarm overlay .-> UB3
-UB2 <-. Swarm overlay .-> UB3
-R1 --> EVIDENCE["Linux / Docker / tshark evidence"]
+RED["red namespace"] --> IPIP["IPIP tunnel"] --> BLUE["blue namespace"]
+VLAN["802.1Q VLANs"] --> MACVLAN["Docker macvlan"]
+UNDERLAY["IP underlay"] --> VXLAN["VXLAN VNI"]
+SWARM["Docker Swarm"] --> SERVICE["Replicated service"]
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries, evidence flow, and publication caveats.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for packet paths and default networks.
 
-## Tech Stack
-
-- Linux network namespaces
-- IPIP
-- Docker
-- macvlan
-- 802.1Q VLAN
-- VXLAN
-- Docker Swarm
-- GNS3
-- Wireshark / tshark
-- PDF Report
-
-## Repository Structure
+## Layout
 
 ```text
-.
-|-- docs/
-|   |-- ARCHITECTURE.md
-|   `-- report/
-|-- evidence/
-|-- CONTRIBUTING.md
-|-- SECURITY.md
-`-- README.md
+scripts/     Linux networking setup and experiment automation scripts
+docs/        topology notes
+evidence/    selected command and packet summaries
 ```
 
-- `docs/report/` - Final PDF report extract and selected figures.
-- `docs/ARCHITECTURE.md` - Topology, evidence flow, and publication boundary.
-- `evidence/` - Reviewed Linux, Docker, and capture-summary outputs.
+## Requirements
 
-## Getting Started
+- Linux host with `iproute2`, Docker and root access.
+- A dedicated parent interface for VLAN and VXLAN tests.
+- An isolated Docker daemon for the Swarm scenario.
 
-Full lab reproduction requires a local GNS3 environment with the corresponding Cisco/Linux appliances and the original lab topology. Those resources are not redistributed here.
+## Quick start
 
-## Evidence Policy
+Create an IPIP namespace endpoint with explicit network values:
 
-Evidence under `evidence/` is curated and text-based where possible. Raw captures (`.pcap`, `.pcapng`), VM images, IOS/ASAv images, GNS3 project IDs, large generated artefacts, and private course PDFs are not included. The report references course material instead of vendoring it.
+```bash
+sudo env \
+  NAMESPACE=red NAMESPACE_ADDRESS=10.10.10.1/24 HOST_ADDRESS=10.10.10.254/24 \
+  TUNNEL_NAME=tun-red TUNNEL_ADDRESS=172.31.0.1/30 LOCAL_UNDERLAY=20.0.0.1 \
+  REMOTE_UNDERLAY=20.0.0.2 REMOTE_NETWORK=10.20.20.0/24 \
+  ./scripts/setup_ipip.sh
+```
 
-## Security and Ethics
+The remaining scripts expose their inputs through environment variables:
 
-This is an authorized educational network-security project. Do not target third-party systems, production networks, or public infrastructure. See [SECURITY.md](SECURITY.md) for scope and reporting guidance.
+```bash
+sudo PARENT_INTERFACE=eth0 ./scripts/setup_macvlan.sh
+sudo PARENT_INTERFACE=eth0 BLUE_VTEP_ADDRESS=10.0.0.1/24 ./scripts/setup_vxlan.sh
+sudo IMAGE=nginx:alpine REPLICAS=3 ./scripts/setup_swarm_service.sh
 
-## Limitations
+```
 
-- Full reproduction requires the original GNS3 Linux-node topology and Docker-capable hosts.
-- Raw PCAP captures are excluded; text and CSV summaries are included.
-- The repository documents lab execution rather than shipping Docker image layers or GNS3 appliances.
+## Verification
 
-## Roadmap
+- Ping the remote namespace through the IPIP tunnel.
+- Inspect macvlan networks and verify VLAN separation.
+- Inspect VXLAN interfaces, VNI values and multicast groups.
+- Check `docker service ls`, task placement and the published service port.
 
-- Extract reusable setup scripts for each exercise where safe.
-- Add sanitized topology metadata and diagrams.
-- Add local report rendering instructions.
+## Safety
 
-## Usage Note
-
-This repository is published as an academic portfolio and reproducibility artefact for SAAR laboratory work. Course guides, network appliance images, and third-party materials may be subject to separate terms.
-
-## References
-
-- [Instituto Superior Tecnico](https://tecnico.ulisboa.pt/)
-- [GNS3](https://www.gns3.com/)
-- [Wireshark](https://www.wireshark.org/)
-- Project-specific lab guides and course slides are cited inside the report source.
-
-## Topics
-
-docker, networking, containers, vxlan, ipip, macvlan, vlan, swarm, linux-namespaces, gns3, academic-project
+Use unique interface and Docker network names when testing. Do not run these scripts on a shared or production Docker host. See [SECURITY.md](SECURITY.md).
